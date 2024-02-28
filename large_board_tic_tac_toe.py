@@ -23,7 +23,7 @@ import sys, random
 mode = "player_vs_ai" # default mode for playing the game (player vs AI)
 
 class RandomBoardTicTacToe:
-    def __init__(self, size = (600, 600)):
+    def __init__(self, size = (600, 800)):
 
         self.size = self.width, self.height = size
         # Define some colors
@@ -31,6 +31,7 @@ class RandomBoardTicTacToe:
         self.WHITE = (255, 255, 255)
         self.GREEN = (0, 255, 0)
         self.RED = (255, 0, 0)
+        self.GREY = (181, 176, 176)
 
         # Grid Size
         self.GRID_SIZE = 4
@@ -54,13 +55,33 @@ class RandomBoardTicTacToe:
         # Create a 2 dimensional array using the column and row variables
         pygame.init()
         self.screen = pygame.display.set_mode(self.size)
+        #window name
         pygame.display.set_caption("Tic Tac Toe Random Grid")
-        self.screen.fill(self.BLACK)
-        # Draw the grid
-        
+        self.screen.fill(self.WHITE)
         """
         YOUR CODE HERE TO DRAW THE GRID OTHER CONTROLS AS PART OF THE GUI
         """
+
+        #DRAWING THE OUTER RECTANGLE AND CAPTION RECTANGLE:
+        outer_rect = pygame.Rect(self.MARGIN, self.MARGIN, self.size[0] - self.MARGIN*2, self.size[1]-self.MARGIN*2)
+        pygame.draw.rect(self.screen, self.BLACK, outer_rect, 5)
+        caption_rect = pygame.Rect(self.MARGIN, self.MARGIN, self.size[0] - self.MARGIN*2, self.HEIGHT/4)
+        pygame.draw.rect(self.screen, self.BLACK, caption_rect, 5)
+
+        #SETTING THE TEXT WITHIN THE CAPTION RECTANGLE
+        #Set the center of textRect to be the same as the center of caption_rect. 
+        #This centers the text within caption_rect.
+        # Blitting the text surface onto the screen
+        font = pygame.font.Font('freesansbold.ttf', 32)
+        text = font.render('TIC-TAC-TOE MEGA BOARD', True, self.BLACK, self.WHITE)
+        textRect = text.get_rect()
+        textRect.center = caption_rect.center
+        self.screen.blit(text, textRect)
+
+        #CONTENT/TEXT WITHIN THE INNENR BOX
+        inner_text = font.render('Select human player symbol below: ', True, self.BLACK, self.WHITE)
+        
+
         
         pygame.display.update()
 
@@ -128,10 +149,14 @@ class RandomBoardTicTacToe:
         done = False
 
         clock = pygame.time.Clock()
+        self.draw_game()
 
 
         while not done:
             for event in pygame.event.get():  # User did something
+
+                if event.type == pygame.QUIT:
+                    done = True
                 """
                 YOUR CODE HERE TO CHECK IF THE USER CLICKED ON A GRID ITEM. EXIT THE GAME IF THE USER CLICKED EXIT
                 """
@@ -157,6 +182,7 @@ class RandomBoardTicTacToe:
                     # If it is human vs human then your opponent should have the value of the selected cell set to -1
                     # Then draw the symbol for your opponent in the selected cell
                     # Within this code portion, continue checking if the game has ended by using is_terminal function
+                
                     
             # Update the screen with what was drawn.
             pygame.display.update()
@@ -164,6 +190,8 @@ class RandomBoardTicTacToe:
         pygame.quit()
 
 tictactoegame = RandomBoardTicTacToe()
+tictactoegame.play_game()
+
 """
 YOUR CODE HERE TO SELECT THE OPTIONS VIA THE GUI CALLED FROM THE ABOVE LINE
 AFTER THE ABOVE LINE, THE USER SHOULD SELECT THE OPTIONS AND START THE GAME. 
