@@ -18,7 +18,21 @@ class GameStatus:
         YOUR CODE HERE TO CHECK IF ANY CELL IS EMPTY WITH THE VALUE 0. IF THERE IS NO EMPTY
         THEN YOU SHOULD ALSO RETURN THE WINNER OF THE GAME BY CHECKING THE SCORES FOR EACH PLAYER 
         """
-		
+		# Check if there are any empty cells left
+		if 0 not in [item for sublist in self.board_state for item in sublist]:
+			# If there are no empty cells, the game is over
+			# Calculate scores for each player
+			scores = self.get_scores(True)
+			# Determine the winner based on the scores
+			if scores > 0:
+				return True, 'Human'
+			elif scores < 0:
+				return True, 'AI'
+			else:
+				return True, 'Draw'
+		else:
+			# If there are still empty cells, the game is not over
+			return False, None
 
 	def get_scores(self, terminal):
 		"""
@@ -33,8 +47,25 @@ class GameStatus:
 		cols = len(self.board_state[0])
 		scores = 0
 		check_point = 3 if terminal else 2
-		
-	    
+
+	    # Check rows
+		for row in self.board_state:
+			if sum(row) == check_point:
+				scores += 1 if terminal else 100
+
+		# Check columns
+		for col in range(cols):
+			if sum(self.board_state[row][col] for row in range(rows)) == check_point:
+				scores += 1 if terminal else 100
+
+		# Check diagonals
+		if sum(self.board_state[i][i] for i in range(rows)) == check_point:
+			scores += 1 if terminal else 100
+		if sum(self.board_state[i][rows - i - 1] for i in range(rows)) == check_point:
+			scores += 1 if terminal else 100
+
+		return scores	
+
 
 	def get_negamax_scores(self, terminal):
 		"""
@@ -48,6 +79,23 @@ class GameStatus:
 		scores = 0
 		check_point = 3 if terminal else 2
 	    
+	    # Check rows
+		for row in self.board_state:
+			if sum(row) == check_point:
+				scores += 100 if terminal else 1
+
+		# Check columns
+		for col in range(cols):
+			if sum(self.board_state[row][col] for row in range(rows)) == check_point:
+				scores += 100 if terminal else 1
+
+		# Check diagonals
+		if sum(self.board_state[i][i] for i in range(rows)) == check_point:
+			scores += 100 if terminal else 1
+		if sum(self.board_state[i][rows - i - 1] for i in range(rows)) == check_point:
+			scores += 100 if terminal else 1
+
+		return scores
 
 	def get_moves(self):
 		moves = []
@@ -55,8 +103,12 @@ class GameStatus:
         YOUR CODE HERE TO ADD ALL THE NON EMPTY CELLS TO MOVES VARIABLES AND RETURN IT TO BE USE BY YOUR
         MINIMAX OR NEGAMAX FUNCTIONS
         """
+		for i in range(len(self.board_state)):
+			for j in range(len(self.board_state[i])):
+				# If the cell is empty (has the value 0), add it to the list of possible moves
+				if self.board_state[i][j] == 0:
+					moves.append((i, j))
 		return moves
-
 
 	def get_new_state(self, move):
 		new_board_state = self.board_state.copy()
