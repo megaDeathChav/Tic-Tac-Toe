@@ -305,15 +305,38 @@ class RandomBoardTicTacToe:
 
     def draw_circle(self, x, y):
         """
-        YOUR CODE HERE TO DRAW THE CIRCLE FOR THE NOUGHTS PLAYER
+        YOUR CODE HERE TO DRAW THE CIRCLE FOR THE NOUGHTS PLAYER AT THE CELL THAT IS SELECTED VIA THE gui
         """
+        #Calculate the center of the cell
+        center_x = (x * (self.WIDTH + self.MARGIN)) + (self.WIDTH // 2) + self.MARGIN
+        center_y = (y * (self.HEIGHT + self.MARGIN)) + (self.HEIGHT // 2) + self.MARGIN
+
+        #Draw the circle
+        pygame.draw.circle(self.screen, self.CIRCLE_COLOR, (center_x, center_y), self.WIDTH // 4, 0)
         
 
     def draw_cross(self, x, y):
         """
         YOUR CODE HERE TO DRAW THE CROSS FOR THE CROSS PLAYER AT THE CELL THAT IS SELECTED VIA THE gui
         """
-        
+        #Calculate the top left and bottom right points of the cell
+        top_left_x = x * (self.WIDTH + self.MARGIN) + self.MARGIN
+        top_left_y = y * (self.HEIGHT + self.MARGIN) + self.MARGIN
+        bottom_right_x = top_left_x + self.WIDTH
+        bottom_right_y = top_left_y + self.HEIGHT
+
+        #Calculate the top right and bottom left points of the cell for the cross
+        top_right_x = bottom_right_x
+        top_right_y = top_left_y
+        bottom_left_x = top_left_x
+        bottom_left_y = bottom_right_y
+
+        #Set the line thickness
+        line_thickness = 2
+
+        #Draw the two lines of the cross
+        pygame.draw.line(self.screen, self.CROSS_COLOR, (top_left_x, top_left_y), (bottom_right_x, bottom_right_y), line_thickness)
+        pygame.draw.line(self.screen, self.CROSS_COLOR, (top_right_x, top_right_y), (bottom_left_x, bottom_left_y), line_thickness)
 
     def is_game_over(self):
 
@@ -323,7 +346,15 @@ class RandomBoardTicTacToe:
         
         YOUR RETURN VALUE SHOULD BE TRUE OR FALSE TO BE USED IN OTHER PARTS OF THE GAME
         """
-    
+        #Check if the game is in a terminal state using the is_terminal method
+        game_over, winner = self.game_state.is_terminal()
+
+        #Update the winner attribute if there is one
+        if game_over:
+            self.winner = winner  #winner would be either 'Human', 'AI', or 'Draw'
+
+        return game_over
+
 
     def move(self, move):
         self.game_state = self.game_state.get_new_state(move)
@@ -352,8 +383,24 @@ class RandomBoardTicTacToe:
         YOUR CODE HERE TO RESET THE BOARD TO VALUE 0 FOR ALL CELLS AND CREATE A NEW GAME STATE WITH NEWLY INITIALIZED
         BOARD STATE
         """
+        #Reset the board to a 2D list of zeros
+        initial_board_state = [[0 for _ in range(self.GRID_SIZE)] for _ in range(self.GRID_SIZE)]
         
+        #Create a new GameStatus object with the reset board
+        self.game_state = GameStatus(initial_board_state)
+        
+        #Reset winner to None as the game is starting over
+        self.winner = None
+        
+        #Reset scores if you're keeping track of them across games
+        self.human_score = 0
+        self.computer_score = 0
+        
+        #Redraw the game board to reflect the reset
+        self.draw_game()
         pygame.display.update()
+
+        
 
     def play_game(self, mode = "player_vs_ai"):
         done = False
