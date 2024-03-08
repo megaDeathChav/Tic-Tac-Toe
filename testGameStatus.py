@@ -3,21 +3,45 @@ from GameStatus_5120 import GameStatus
 
 class TestGameStatus(unittest.TestCase):
     def test_is_terminal(self):
+
+        # --------- 3x3 grid tests ------------
+
         # Test a game that is not over
         game_state = GameStatus([[0, 0, 0], [0, 0, 0], [0, 0, 0]], True)
         self.assertEqual(game_state.is_terminal(), (False, None))
 
         # Test a game that is over with a draw
-        game_state = GameStatus([[1, -1, 1], [-1, 1, -1], [1, -1, 1]], False)
+        game_state = GameStatus([[1, -1, 1], [-1, 1, -1], [1, -1, 1]], True)
         self.assertEqual(game_state.is_terminal(), (True, 'Human'))
 
         # Test a game that is over with a win for the human player
-        game_state = GameStatus([[1, 1, 1], [0, -1, 0], [0, 0, -1]], False)
+        game_state = GameStatus([[1, 1, 1], [0, -1, 0], [0, 0, -1]], True)
         self.assertEqual(game_state.is_terminal(), (True, 'Human'))
 
         # Test a game that is over with a win for the AI player
         game_state = GameStatus([[-1, -1, -1], [0, 1, 0], [0, 0, 1]], True)
         self.assertEqual(game_state.is_terminal(), (True, 'AI'))
+
+        # --------- 4x4 grid tests ------------
+
+        # Test a game that is not over
+        game_state = GameStatus([[0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0]], True)
+        self.assertEqual(game_state.is_terminal(), (False, None))
+
+        # Test a game that is over with a win for the human player
+        game_state = GameStatus([[1, -1, -1, -1], [-1, -1, 1, 1], [-1, -1, 1, -1], [1, 1, 1 ,1]], True)
+        self.assertEqual(game_state.is_terminal(), (True, 'Human'))
+        # print("Human should win scores:", game_state.get_scores())
+
+        # Test a game that is over with a win for the AI player
+        game_state = GameStatus([[-1, 1, 1, 1], [1, 1, -1, -1], [1, 1, -1, 1], [-1, -1, -1 , -1]], True)
+        self.assertEqual(game_state.is_terminal(), (True, 'AI'))
+        # print("AI should win scores:", game_state.get_scores())
+
+        # Test a game that is over with a draw
+        game_state = GameStatus([[1, -1, -1, -1], [-1, -1, 1, 1], [-1, -1, 1, -1], [1, 1, 1 , -1]], True)
+        self.assertEqual(game_state.is_terminal(), (True, 'Draw'))
+        # print("Draw scores:", game_state.get_scores())
 
     def test_get_moves(self):
         # Test a game with all cells empty

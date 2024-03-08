@@ -62,30 +62,39 @@ class GameStatus:
 
 	    # Check rows
 		for row in self.board_state:
-			total = sum(row)
-			if total == check_point_player:
-				scores += 1
-			elif total == check_point_AI:
-				scores -= 1
+			for i in range(len(row) - 2):
+				total = sum(row[i:i+3])
+				if total == check_point_player:
+					scores += 1
+				elif total == check_point_AI:
+					scores -= 1
 
 		# Check columns
 		for col in range(cols):
-			total = sum(self.board_state[row][col] for row in range(rows))
-			if total == check_point_player:
-				scores += 1
-			elif total == check_point_AI:
-				scores -= 1
+			for i in range(rows - 2):
+				total = sum(self.board_state[j][col] for j in range(i, i+3))
+				if total == check_point_player:
+					scores += 1
+				elif total == check_point_AI:
+					scores -= 1
+					
+		# Check main diagonals
+		for i in range(rows - 2):
+			for j in range(cols - 2):
+				total = sum(self.board_state[i + k][j + k] for k in range(3))
+				if total == check_point_player:
+					scores += 1
+				elif total == check_point_AI:
+					scores -= 1
 
-		# Check diagonals
-		if sum(self.board_state[i][i] for i in range(rows)) == check_point_player:
-			scores += 1
-		elif sum(self.board_state[i][i] for i in range(rows)) == check_point_AI:
-			scores -= 1
-
-		if sum(self.board_state[i][rows - i - 1] for i in range(rows)) == check_point_player:
-			scores += 1
-		elif sum(self.board_state[i][rows - i - 1] for i in range(rows)) == check_point_AI:
-			scores -= 1
+		# Check anti-diagonals
+		for i in range(rows - 2):
+			for j in range(2, cols):
+				total = sum(self.board_state[i + k][j - k] for k in range(3))
+				if total == check_point_player:
+					scores += 1
+				elif total == check_point_AI:
+					scores -= 1
 
 		return scores	
 
