@@ -4,8 +4,11 @@
 class GameStatus:
 
 
-	def __init__(self, board_state, turn_O):
+	def __init__(self, board_state=None, turn_O=True):
 
+		self.board_state = board_state
+		if board_state == None:
+			board_state = [[0,0,0], [0,0,0], [0,0,0]]
 		self.board_state = board_state
 		self.turn_O = turn_O
 		self.oldScores = 0
@@ -18,6 +21,14 @@ class GameStatus:
         YOUR CODE HERE TO CHECK IF ANY CELL IS EMPTY WITH THE VALUE 0. IF THERE IS NO EMPTY
         THEN YOU SHOULD ALSO RETURN THE WINNER OF THE GAME BY CHECKING THE SCORES FOR EACH PLAYER 
         """
+
+		if len(self.board_state) == 3:
+			scores = self.get_scores()
+			if scores > 0:
+				return True, 'Human'
+			elif scores < 0:
+				return True, 'AI'
+
 		# Check if there are any empty cells left
 		if 0 not in [item for sublist in self.board_state for item in sublist]:
 			# If there are no empty cells, the game is over
@@ -34,35 +45,47 @@ class GameStatus:
 			# If there are still empty cells, the game is not over
 			return False, None
 
-	def get_scores(self, terminal):
+	def get_scores(self, terminal=False):
 		"""
         YOUR CODE HERE TO CALCULATE THE SCORES. MAKE SURE YOU ADD THE SCORE FOR EACH PLAYER BY CHECKING 
         EACH TRIPLET IN THE BOARD IN EACH DIRECTION (HORIZONAL, VERTICAL, AND ANY DIAGONAL DIRECTION)
         
         YOU SHOULD THEN RETURN THE CALCULATED SCORE WHICH CAN BE POSITIVE (HUMAN PLAYER WINS),
         NEGATIVE (AI PLAYER WINS), OR 0 (DRAW)
-        
         """        
 		rows = len(self.board_state)
 		cols = len(self.board_state[0])
 		scores = 0
-		check_point = 3 if terminal else 2
+		check_point_player = 3
+		check_point_AI = -3
+
 
 	    # Check rows
 		for row in self.board_state:
-			if sum(row) == check_point:
-				scores += 1 if terminal else 100
+			total = sum(row)
+			if total == check_point_player:
+				scores += 1
+			elif total == check_point_AI:
+				scores -= 1
 
 		# Check columns
 		for col in range(cols):
-			if sum(self.board_state[row][col] for row in range(rows)) == check_point:
-				scores += 1 if terminal else 100
+			total = sum(self.board_state[row][col] for row in range(rows))
+			if total == check_point_player:
+				scores += 1
+			elif total == check_point_AI:
+				scores -= 1
 
 		# Check diagonals
-		if sum(self.board_state[i][i] for i in range(rows)) == check_point:
-			scores += 1 if terminal else 100
-		if sum(self.board_state[i][rows - i - 1] for i in range(rows)) == check_point:
-			scores += 1 if terminal else 100
+		if sum(self.board_state[i][i] for i in range(rows)) == check_point_player:
+			scores += 1
+		elif sum(self.board_state[i][i] for i in range(rows)) == check_point_AI:
+			scores -= 1
+
+		if sum(self.board_state[i][rows - i - 1] for i in range(rows)) == check_point_player:
+			scores += 1
+		elif sum(self.board_state[i][rows - i - 1] for i in range(rows)) == check_point_AI:
+			scores -= 1
 
 		return scores	
 
@@ -113,5 +136,6 @@ class GameStatus:
 	def get_new_state(self, move):
 		new_board_state = self.board_state.copy()
 		x, y = move[0], move[1]
-		new_board_state[x,y] = 1 if self.turn_O else -1
-		return GameStatus(new_board_state, not self.turn_O)
+		new_board_state[x][y] = 1 if self.turn_O else -1
+		self.turn_O = not self.turn_O
+		return GameStatus(new_board_state, self.turn_O)
