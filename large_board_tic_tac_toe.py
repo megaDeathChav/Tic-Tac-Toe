@@ -70,7 +70,7 @@ class RandomBoardTicTacToe:
         self.human_vs_computer_selected = False
 
 
-        self.minimax_selected = False  # True if "Minimax" is selected, otherwise Negamax is assumed
+        self.minimax_selected = None  # No algorithm selected by default
         self.minimax_rect = None  # Will be defined in draw_game
         self.negamax_rect = None  # Will be defined in draw_game
 
@@ -458,10 +458,10 @@ class RandomBoardTicTacToe:
         NUMBER AND MOVE IS AN X,Y LOCATION RETURNED BY THE AGENT
         """
         if self.minimax_selected:
-            #call minimax function
+            #minimax function needs to be called here
             pass
         else:
-            #call negamax
+            #negamax function needs to be called here
             pass
         
         self.change_turn()
@@ -522,7 +522,7 @@ class RandomBoardTicTacToe:
                         self.nought_selected = False  # Deselect the other option
                         self.draw_game()  # Redraw the game to show the updated colors
                     
-                    #Handle human option click
+                    #Handle human vs human option click
                     if self.human_human_rect.collidepoint(mouse_pos):
                         self.human_vs_human_selected = True
                         self.human_vs_computer_selected = False  # Deselect the other option
@@ -530,20 +530,25 @@ class RandomBoardTicTacToe:
                         self.draw_game()  # Redraw the game to show the updated colors
                     
                     
-                    # Handle computer option click
+                    #Handle human vs computer option click
                     elif self.human_computer_rect.collidepoint(mouse_pos):
                         self.human_vs_computer_selected = True
-                        self.human_vs_human_selected = False  # Deselect the other option
-                        self.minimax_selected = False  # Reset this selection every time "Human vs Computer" is clicked
-                        self.draw_game()  # Redraw the game to show the updated colors
+                        self.human_vs_human_selected = False  #Deselect the other option
+                        self.minimax_selected = False  #Reset this selection every time "Human vs Computer" is clicked
+                        self.draw_game()  #Redraw the game to show the updated colors
                         
+                    #Handle clicks on the minimax or negamax options only when human_vs_computer is selected
                     if self.human_vs_computer_selected:
-                        if self.minimax_rect and self.minimax_rect.collidepoint(mouse_pos):
-                            self.minimax_selected = True
+                        if self.minimax_rect.collidepoint(mouse_pos):
+                            #Toggle between true and none to allow for delelecting
+                            self.minimax_selected = not self.minimax_selected if self.minimax_selected else True
                             self.draw_game()
-                        elif self.negamax_rect and self.negamax_rect.collidepoint(mouse_pos):
-                            self.minimax_selected = False
+                        elif self.negamax_rect.collidepoint(mouse_pos):
+                             #If minimax is selected, deselect it, otherwise do nothing
+                            if self.minimax_selected:
+                                self.minimax_selected = None
                             self.draw_game()
+
 
                     #Check if the dropdown was clicked
                     if self.dropdown_rect.collidepoint(mouse_pos):
