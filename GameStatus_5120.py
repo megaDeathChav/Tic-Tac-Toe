@@ -21,12 +21,11 @@ class GameStatus:
         YOUR CODE HERE TO CHECK IF ANY CELL IS EMPTY WITH THE VALUE 0. IF THERE IS NO EMPTY
         THEN YOU SHOULD ALSO RETURN THE WINNER OF THE GAME BY CHECKING THE SCORES FOR EACH PLAYER 
         """
-
+		scores_player, scores_AI = self.get_scores()
 		if len(self.board_state) == 3:
-			scores = self.get_scores()
-			if scores > 0:
+			if scores_player > scores_AI:
 				return True, 'Human'
-			elif scores < 0:
+			elif scores_player < scores_AI:
 				return True, 'AI'
 
 		# Check if there are any empty cells left
@@ -35,9 +34,9 @@ class GameStatus:
 			# Calculate scores for each player
 			scores = self.get_scores(True)
 			# Determine the winner based on the scores
-			if scores > 0:
+			if scores_player > scores_AI:
 				return True, 'Human'
-			elif scores < 0:
+			elif scores_player < scores_AI:
 				return True, 'AI'
 			else:
 				return True, 'Draw'
@@ -55,7 +54,9 @@ class GameStatus:
         """        
 		rows = len(self.board_state)
 		cols = len(self.board_state[0])
-		scores = 0
+		scores_player = 0
+		scores_AI = 0
+		# scores = 0
 		check_point_player = 3
 		check_point_AI = -3
 
@@ -65,38 +66,38 @@ class GameStatus:
 			for i in range(len(row) - 2):
 				total = sum(row[i:i+3])
 				if total == check_point_player:
-					scores += 1
+					scores_player += 1
 				elif total == check_point_AI:
-					scores -= 1
+					scores_AI += 1
 
 		# Check columns
 		for col in range(cols):
 			for i in range(rows - 2):
 				total = sum(self.board_state[j][col] for j in range(i, i+3))
 				if total == check_point_player:
-					scores += 1
+					scores_player += 1
 				elif total == check_point_AI:
-					scores -= 1
+					scores_AI += 1
 					
 		# Check main diagonals
 		for i in range(rows - 2):
 			for j in range(cols - 2):
 				total = sum(self.board_state[i + k][j + k] for k in range(3))
 				if total == check_point_player:
-					scores += 1
+					scores_player += 1
 				elif total == check_point_AI:
-					scores -= 1
+					scores_AI += 1
 
 		# Check anti-diagonals
 		for i in range(rows - 2):
 			for j in range(2, cols):
 				total = sum(self.board_state[i + k][j - k] for k in range(3))
 				if total == check_point_player:
-					scores += 1
+					scores_player += 1
 				elif total == check_point_AI:
-					scores -= 1
+					scores_AI += 1
 
-		return scores	
+		return (scores_player, scores_AI)	
 
 
 	def get_negamax_scores(self, terminal):

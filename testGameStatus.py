@@ -55,19 +55,19 @@ class TestGameStatus(unittest.TestCase):
     def test_get_scores(self):
         # Test a game with no winner
         game_state = GameStatus([[0, 0, 0], [0, 0, 0], [0, 0, 0]], True)
-        self.assertEqual(game_state.get_scores(), 0)
+        self.assertEqual(game_state.get_scores(), (0, 0))
 
         # Test a game with a draw
         game_state = GameStatus([[1, -1, 1], [-1, 1, -1], [1, -1, 1]], False)
-        self.assertEqual(game_state.get_scores(), 2)
+        self.assertEqual(game_state.get_scores(), (2, 0))
 
         # Test a game with a win for the human player
         game_state = GameStatus([[1, 1, 1], [0, -1, 0], [0, 0, -1]], False)
-        self.assertEqual(game_state.get_scores(), 1)
+        self.assertEqual(game_state.get_scores(), (1, 0))
 
         # Test a game with a win for the AI player
         game_state = GameStatus([[-1, -1, -1], [0, 1, 0], [0, 0, 1]], True)
-        self.assertEqual(game_state.get_scores(), -1)
+        self.assertEqual(game_state.get_scores(), (0, 1))
 
     def test_get_new_state(self):
         # Test a game with a move for the human player
