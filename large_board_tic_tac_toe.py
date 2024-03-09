@@ -55,12 +55,22 @@ class RandomBoardTicTacToe:
         self.dropdown_options = ["3x3", "4x4", "5x5"]
         #The actual position and size will be calculatesd in draw_game
         self.dropdown_rect = pygame.Rect(0, 0, 0, 0)  #Placeholder values for now
+        
+        
         #Initalize variables for scores and winners
         self.human_score = 0
         self.computer_score = 0
         self.winner = None 
 
-        #Initialize the dropdown rectangle with x, y, width, and height
+
+        #initialize values for select options 
+        self.nought_selected = False
+        self.cross_selected = False
+        self.human_vs_human_selected = False
+        self.human_vs_computer_selected = False
+        
+        
+        
         # Initialize pygame
         pygame.init()
         self.game_reset()
@@ -97,7 +107,7 @@ class RandomBoardTicTacToe:
 
 
 
-        #CONTENT/TEXT WITHIN THE INNENR BOX--------
+        #CONTENT/TEXT WITHIN THE INNER BOX--------
         #Align horizontally with the caption
         #Position just below the caption with a 10 pixel margin 
         #Blit text onto the screen at the specified position
@@ -110,50 +120,88 @@ class RandomBoardTicTacToe:
 
 
 
-
         #CONTENT/TEXT WITHIN THE INNENR BOX. These are the select options:----------------------
         #Draw the options text with appropriate font size
         #Draw the circle for the nought option
-        font = pygame.font.Font(None, 24)
-        text_nought = font.render('Nought (O)', True, self.BLACK)
-        #Define rectangles for clickable areas with the correct height for circle
         option_height = 50  # Set the height for the option areas
-        nought_rect = pygame.Rect(self.MARGIN, 120, self.size[0] - self.MARGIN*2, option_height)
-        #Draw the text onto the screen at the specified position for circle
+        font = pygame.font.Font(None, 24)
+        circle_padding = 10
+        
+
+        #THESE ARE THE NOUGHT AND CROSS BUTTONS------------------------
+        #Draw the text onto the screen at the specified position for circle and cross
+        text_nought = font.render('Nought (O)', True, self.BLACK)
+        self.screen.blit(text_nought, (self.MARGIN * 8, 120))
+        text_cross = font.render('Cross (X)', True, self.BLACK)
+        self.screen.blit(text_cross, (self.MARGIN * 8, 150 ))
+
+
+        nought_color_option = self.BLUE if self.nought_selected else self.NAVY
+        circle_radius = option_height //6
+        nought_circle_center_x = self.MARGIN *5
+        nought_circle_center_y = 120 + option_height // 5.7
+        self.nought_rect = pygame.Rect(
+        nought_circle_center_x - circle_radius - circle_padding, 
+        nought_circle_center_y - circle_radius - circle_padding, 
+        2 * (circle_radius + circle_padding), 
+        2 * (circle_radius + circle_padding))
+        #self.nought_rect = pygame.Rect(self.MARGIN, 120, self.size[0] - self.MARGIN*2, option_height)
         self.screen.blit(text_nought, (self.MARGIN * 8, 120))
         circle_center = (self.MARGIN * 5, 120 + option_height // 5.7) # Calculate the center position for the circle
-        #Draw the circle for the nought option
-        pygame.draw.circle(self.screen, self.NAVY, circle_center, option_height // 6, 0)
-        # Define rectangles for clickable are as with the correct height for cross
-        # Draw the circle for the cross option
-        text_cross = font.render('Cross (X)', True, self.BLACK)
-        cross_rect = pygame.Rect(self.MARGIN, 180 + option_height, self.size[0] - self.MARGIN*2, option_height)
-        self.screen.blit(text_cross, (self.MARGIN * 8, 150 ))
-        circle_center = (self.MARGIN * 5, 150 + option_height // 5.7) #Calculate the center position for the circle
-        pygame.draw.circle(self.screen, self.NAVY, circle_center, option_height // 6, 0)
+        pygame.draw.circle(self.screen, nought_color_option, circle_center, option_height // 6, 0)         #Draw the circle for the nought option
+        
+        
+        cross_color_option = self.BLUE if self.cross_selected else self.NAVY
+        cross_circle_center = (self.MARGIN * 5, 150 + option_height // 5.7) #Calculate the center position for the circle
+        #self.cross_rect = pygame.Rect(self.MARGIN, 180 + option_height, self.size[0] - self.MARGIN*2, option_height)
+        self.cross_rect = pygame.Rect(
+        cross_circle_center[0] - option_height // 6 - circle_padding,
+        cross_circle_center[1] - option_height // 6 - circle_padding,
+        2 * (option_height // 6 + circle_padding),
+        2 * (option_height // 6 + circle_padding))
+        pygame.draw.circle(self.screen, cross_color_option, cross_circle_center, option_height // 6, 0)
 
-        #THIS IS THE HUMAN VS HUMAN AND HUMAN VS COMPUTER OPTION------------------------
+        
+        
+        
+        
+        #THESE ARE THE HUMAN VS HUMAN AND HUMAN VS COMPUTER OPTIONs AND BUTTONS------------------------
         #Define the x-coordinate for the start of the "Human vs" options, 
         #which will be to the right of the "Nought (O)" and "Cross (X)" options.
         second_col_x = self.MARGIN * 20 + max(text_nought.get_width(), text_cross.get_width()) + self.MARGIN
 
-        #Render the "Human vs" options text
-        text_human_human = font.render('Human vs Human', True, self.BLACK)
-        text_human_computer = font.render('Human vs Computer', True, self.BLACK)
 
+        #Render the "Human vs" options text
         #Calculate the y-coordinate for the "Human vs" options
         #Define rectangles for clickable areas with the correct height for "Human vs" options
-        human_human_rect = pygame.Rect(second_col_x, 120, self.size[0] - second_col_x - self.MARGIN, option_height)
-        human_computer_rect = pygame.Rect(second_col_x, 150, self.size[0] - second_col_x - self.MARGIN, option_height)
-        # Draw the "Human vs" human text onto the screens at the specified position
-        # Draw the "Human vs Human" option text and circle
-        self.screen.blit(text_human_human, (second_col_x, 120))
+        text_human_human = font.render('Human vs Human', True, self.BLACK)
+        text_human_computer = font.render('Human vs Computer', True, self.BLACK)
+        self.screen.blit(text_human_human, (second_col_x, 120)) # Draw the "Human vs" human text onto the screen
+        self.screen.blit(text_human_computer, (second_col_x, 150))# Draw the "Human vs" computer onto the screen
+
+
+        #Draw the "Human vs Human" option circle and clickable rectangle
+        #self.human_human_rect = pygame.Rect(second_col_x, 120, self.size[0] - second_col_x - self.MARGIN, option_height)
         human_human_circle_center = (self.MARGIN * 35, 120 + option_height // 5.7)  # Centered inss the option area
-        pygame.draw.circle(self.screen, self.NAVY, human_human_circle_center, option_height // 6, 0)
-        # Draw the "Human vs Computer" option text and circle
-        self.screen.blit(text_human_computer, (second_col_x, 150))
+        self.human_human_rect = pygame.Rect(
+        human_human_circle_center[0] - option_height // 6 - circle_padding,
+        human_human_circle_center[1] - option_height // 6 - circle_padding,
+        2 * (option_height // 6 + circle_padding),
+        2 * (option_height // 6 + circle_padding))
+        self.human_human_color = self.BLUE if self.human_vs_human_selected else self.NAVY
+        pygame.draw.circle(self.screen, self.human_human_color, human_human_circle_center, option_height // 6, 0)
+        
+
+        #Draw the "Human vs Computer" option circle and clickable retangle
+        #self.human_computer_rect = pygame.Rect(second_col_x, 150, self.size[0] - second_col_x - self.MARGIN, option_height)
         human_computer_circle_center = (self.MARGIN * 35, 150 + option_height // 5.7)  # Centered in the option area
-        pygame.draw.circle(self.screen, self.NAVY, human_computer_circle_center, option_height // 6, 0)
+        self.human_computer_rect = pygame.Rect(
+        human_computer_circle_center[0] - option_height // 6 - circle_padding,
+        human_computer_circle_center[1] - option_height // 6 - circle_padding,
+        2 * (option_height // 6 + circle_padding),
+        2 * (option_height // 6 + circle_padding))
+        self.human_computer_color = self.BLUE if self.human_vs_computer_selected else self.NAVY
+        pygame.draw.circle(self.screen, self.human_computer_color, human_computer_circle_center, option_height // 6, 0)
         
 
 
@@ -416,10 +464,34 @@ class RandomBoardTicTacToe:
 
                 elif event.type == pygame.MOUSEBUTTONDOWN:
                     mouse_pos = event.pos
+
+                    # Handle Nought option click
+                    if self.nought_rect.collidepoint(mouse_pos):
+                        self.nought_selected = True
+                        self.cross_selected = False  # Deselect the other option
+                        self.draw_game()  # Redraw the game to show the updated colors
+                    elif self.cross_rect.collidepoint(mouse_pos):
+                        self.cross_selected = True
+                        self.nought_selected = False  # Deselect the other option
+                        self.draw_game()  # Redraw the game to show the updated colors
+                    
+                    #Handle human option click
+                    if self.human_human_rect.collidepoint(mouse_pos):
+                        self.human_vs_human_selected = True
+                        self.human_vs_computer_selected = False  # Deselect the other option
+                        self.draw_game()  # Redraw the game to show the updated colors
+                    # Handle computer option click
+                    elif self.human_computer_rect.collidepoint(mouse_pos):
+                        self.human_vs_computer_selected = True
+                        self.human_vs_human_selected = False  # Deselect the other option
+                        self.draw_game()  # Redraw the game to show the updated colors
+
                     #Check if the dropdown was clicked
                     if self.dropdown_rect.collidepoint(mouse_pos):
                         self.dropdown_expanded = not self.dropdown_expanded
                         self.draw_game()
+
+
                     #Check if one of the dropdown options was clicked
                     elif self.dropdown_expanded:
                         for i, option in enumerate(self.dropdown_options):
