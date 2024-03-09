@@ -68,6 +68,12 @@ class RandomBoardTicTacToe:
         self.cross_selected = False
         self.human_vs_human_selected = False
         self.human_vs_computer_selected = False
+
+
+        self.minimax_selected = False  # True if "Minimax" is selected, otherwise Negamax is assumed
+        self.minimax_rect = None  # Will be defined in draw_game
+        self.negamax_rect = None  # Will be defined in draw_game
+
         
         
         
@@ -263,6 +269,40 @@ class RandomBoardTicTacToe:
                 self.screen.blit(option_text_surface, option_text_rect.topleft)
 
         
+        
+        
+        #DRAWING OF THE MINIMAX OR NEGAMAX OPTION TEXT-------------------------
+        font = pygame.font.Font(None, 22)
+        if self.human_vs_computer_selected:
+            minimax_negamax_x = label_x  # Align the left edge with the BOARD SIZE text
+            minimax_negamax_y = label_y + 25  # Some space below the "BOARD SIZE" TEXT
+
+            #Define colors based on selection
+            minimax_color = self.BLUE if self.minimax_selected else self.NAVY
+            negamax_color = self.NAVY if self.minimax_selected else self.BLUE  # If minimax is not selected, negamax is assumed
+
+            #Draw the "Minimax?" and "Negamax?" option text
+            text_minimax = font.render('Minimax?', True, self.BLACK)
+            text_negamax = font.render('Negamax?', True, self.BLACK)
+
+            #Calculate positions for text and circles
+            minimax_text_position = (minimax_negamax_x, minimax_negamax_y)
+            negamax_text_position = (minimax_negamax_x, minimax_negamax_y + option_height - 25)  # Add some vertical space
+
+            #Update rectangles for clickable areas
+            self.minimax_rect = pygame.Rect(minimax_text_position[0], minimax_text_position[1], 100, option_height)
+            self.negamax_rect = pygame.Rect(negamax_text_position[0], negamax_text_position[1], 100, option_height)
+
+            #Draw text onto the screen
+            self.screen.blit(text_minimax, minimax_text_position)
+            self.screen.blit(text_negamax, negamax_text_position)
+
+            #Draw the selection circles for "Minimax" and "Negamax"
+            pygame.draw.circle(self.screen, minimax_color, (minimax_text_position[0] + text_minimax.get_width() + 10, minimax_text_position[1] + text_minimax.get_height() // 2), option_height // 6, 0)
+            pygame.draw.circle(self.screen, negamax_color, (negamax_text_position[0] + text_negamax.get_width() + 10, negamax_text_position[1] + text_negamax.get_height() // 2), option_height // 6, 0)
+
+
+        
 
         
 
@@ -417,11 +457,18 @@ class RandomBoardTicTacToe:
         THE RETURN VALUES FROM YOUR MINIMAX/NEGAMAX ALGORITHM SHOULD BE THE SCORE, MOVE WHERE SCORE IS AN INTEGER
         NUMBER AND MOVE IS AN X,Y LOCATION RETURNED BY THE AGENT
         """
+        if self.minimax_selected:
+            #call minimax function
+            pass
+        else:
+            #call negamax
+            pass
         
         self.change_turn()
         pygame.display.update()
         terminal = self.game_state.is_terminal()
         """ USE self.game_state.get_scores(terminal) HERE TO COMPUTE AND DISPLAY THE FINAL SCORES """
+
 
 
 
@@ -435,7 +482,7 @@ class RandomBoardTicTacToe:
         initial_board_state = [[0 for _ in range(self.GRID_SIZE)] for _ in range(self.GRID_SIZE)]
         
         #Create a new GameStatus object with the reset board
-        self.game_state = GameStatus(initial_board_state)
+        #self.game_state = GameStatus(initial_board_state)
         
         #Reset winner to None as the game is starting over
         self.winner = None
@@ -479,12 +526,24 @@ class RandomBoardTicTacToe:
                     if self.human_human_rect.collidepoint(mouse_pos):
                         self.human_vs_human_selected = True
                         self.human_vs_computer_selected = False  # Deselect the other option
+                        self.minimax_selected = False  # Reset the AI strategy selection
                         self.draw_game()  # Redraw the game to show the updated colors
+                    
+                    
                     # Handle computer option click
                     elif self.human_computer_rect.collidepoint(mouse_pos):
                         self.human_vs_computer_selected = True
                         self.human_vs_human_selected = False  # Deselect the other option
+                        self.minimax_selected = False  # Reset this selection every time "Human vs Computer" is clicked
                         self.draw_game()  # Redraw the game to show the updated colors
+                        
+                    if self.human_vs_computer_selected:
+                        if self.minimax_rect and self.minimax_rect.collidepoint(mouse_pos):
+                            self.minimax_selected = True
+                            self.draw_game()
+                        elif self.negamax_rect and self.negamax_rect.collidepoint(mouse_pos):
+                            self.minimax_selected = False
+                            self.draw_game()
 
                     #Check if the dropdown was clicked
                     if self.dropdown_rect.collidepoint(mouse_pos):
