@@ -1,26 +1,9 @@
-"""
-PLEASE READ THE COMMENTS BELOW AND THE HOMEWORK DESCRIPTION VERY CAREFULLY BEFORE YOU START CODING
-
- The file where you will need to create the GUI which should include (i) drawing the grid, (ii) call your Minimax/Negamax functions
- at each step of the game, (iii) allowing the controls on the GUI to be managed (e.g., setting board size, using 
-                                                                                 Minimax or Negamax, and other options)
- In the example below, grid creation is supported using pygame which you can use. You are free to use any other 
- library to create better looking GUI with more control. In the __init__ function, GRID_SIZE (Line number 36) is the variable that
- sets the size of the grid. Once you have the Minimax code written in multiAgents.py file, it is recommended to test
- your algorithm (with alpha-beta pruning) on a 3x3 GRID_SIZE to see if the computer always tries for a draw and does 
- not let you win the game. Here is a video tutorial for using pygame to create grids http://youtu.be/mdTeqiWyFnc
- 
- 
- PLEASE CAREFULLY SEE THE PORTIONS OF THE CODE/FUNCTIONS WHERE IT INDICATES "YOUR CODE BELOW" TO COMPLETE THE SECTIONS
- 
-"""
 import pygame
 import numpy as np
 from GameStatus_5120 import GameStatus
 from multiAgents import minimax, negamax
 import sys, random
 
-mode = "player_vs_ai" # default mode for playing the game (player vs AI)
 
 class RandomBoardTicTacToe:
     def __init__(self, size = (600, 800)):
@@ -37,7 +20,13 @@ class RandomBoardTicTacToe:
 
         # Grid Size
         self.GRID_SIZE = 4
-        self. OFFSET = 5
+        self.OFFSET = 5
+
+        self.gridStartX = 0
+        self.gridStartY = 0
+        self.cellSize = 0
+        self.cellTotal = 0
+        self.grid_rect = None
 
         self.CIRCLE_COLOR = (140, 146, 172)
         self.CROSS_COLOR = (140, 146, 172)
@@ -74,13 +63,15 @@ class RandomBoardTicTacToe:
         self.minimax_rect = None  # Will be defined in draw_game
         self.negamax_rect = None  # Will be defined in draw_game
 
-        self.game_state = GameStatus([[0 for _ in range(self.GRID_SIZE)] for _ in range(self.GRID_SIZE)], self.nought_selected)
+        self.game_state = GameStatus( turn_O=self.nought_selected)
 
         self.start_game = False # This will be used to start the game once the user selects the options
 
         self.start_game_rect = None  # Will be defined in draw_game
 
         self.grid_rects = []
+
+        self.mode = "player_vs_ai"  # Default mode is player vs AI
 
         
         
@@ -102,7 +93,7 @@ class RandomBoardTicTacToe:
         """
         YOUR CODE HERE TO DRAW THE GRID OTHER CONTROLS AS PART OF THE GUI
         """
-
+        self.grid_rects = []  # Reset the grid rectangles
 
         #DRAWING THE OUTER RECTANGLE AND CAPTION RECTANGLE:---------------
         outer_rect = pygame.Rect(self.MARGIN, self.MARGIN, self.size[0] - self.MARGIN*2, self.size[1]-self.MARGIN*2)
@@ -372,14 +363,19 @@ class RandomBoardTicTacToe:
 
         #CODE FOR GRID ----------------------------------------------
         grid_top_left_x = self.MARGIN
+        self.gridStartX = grid_top_left_x
         grid_top_left_y = button_rect.bottom + self.MARGIN  # Start just below the 'Start Game' button
+        self.gridStartY = grid_top_left_y
 
         #CALCULATE THE AVAILABLE SPACE
         available_width = self.size[0] - (2 * self.MARGIN)
         available_height = self.size[1] - grid_top_left_y - self.MARGIN  # Space below the 'Start Game' button
         # Calculate the size of each grid cell based on the selected board size
         GRID_SIZE = int(self.current_selection[0])  # Assuming the selection is like "3x3", "4x4", etc.
+        self.cellTotal = GRID_SIZE
         cell_size = min((available_width // GRID_SIZE), (available_height // GRID_SIZE))
+        self.cellSize = cell_size
+        self.grid_rect = pygame.Rect(grid_top_left_x, grid_top_left_y, cell_size * GRID_SIZE, cell_size * GRID_SIZE)
 
         # Calculate the total grid width and height based on cell size
         total_grid_width = cell_size * GRID_SIZE
@@ -390,31 +386,31 @@ class RandomBoardTicTacToe:
         grid_start_y = button_rect.bottom + (self.size[1] - button_rect.bottom - total_grid_height) // 2
 
         # Draw the grid
-        for row in range(GRID_SIZE):
+        for row in range(int(self.current_selection[0])):
             # print("ROW: ", row)
             self.grid_rects.append([])  # Create a new row
-            for col in range(GRID_SIZE):
-                print("COL: ", col)
+            for col in range(int(self.current_selection[0])):
+                # print("COL: ", col)
                 cell_rect = pygame.Rect(
                     grid_start_x + (col * cell_size),
                     grid_start_y + (row * cell_size),
                     cell_size,
                     cell_size
                 )
+                # print("board_state: ", self.game_state.board_state)
+                # print("row: ", row)
+                # print("col: ", col)
+                if self.game_state.board_state[row][col] == 1:
+                    pygame.draw.circle(self.screen, self.CIRCLE_COLOR, cell_rect.center, cell_size // 3, 10)
+                    # self.draw_circle(cell_rect.centerx, cell_rect.centery)
+                elif self.game_state.board_state[row][col] == -1:
+                    pygame.draw.line(self.screen, self.CROSS_COLOR, cell_rect.topleft, cell_rect.bottomright, 10)
+                    pygame.draw.line(self.screen, self.CROSS_COLOR, cell_rect.bottomleft, cell_rect.topright, 10)
                 self.grid_rects[row].append(cell_rect)  # Save the rectangle for later use
                 pygame.draw.rect(self.screen, self.BLACK, cell_rect, 1)  # 1 for the line thickness
 
     
         # pygame.display.update()
-
-
-    def change_turn(self):
-
-        if(self.game_state.turn_O):
-            pygame.display.set_caption("Tic Tac Toe - O's turn")
-        else:
-            pygame.display.set_caption("Tic Tac Toe - X's turn")
-
 
     def draw_circle(self, x, y):
         """
@@ -451,216 +447,135 @@ class RandomBoardTicTacToe:
         pygame.draw.line(self.screen, self.CROSS_COLOR, (top_left_x, top_left_y), (bottom_right_x, bottom_right_y), line_thickness)
         pygame.draw.line(self.screen, self.CROSS_COLOR, (top_right_x, top_right_y), (bottom_left_x, bottom_left_y), line_thickness)
 
-    def is_game_over(self):
-
-        """
-        YOUR CODE HERE TO SEE IF THE GAME HAS TERMINATED AFTER MAKING A MOVE. YOU SHOULD USE THE IS_TERMINAL()
-        FUNCTION FROM GAMESTATUS_5120.PY FILE (YOU WILL FIRST NEED TO COMPLETE IS_TERMINAL() FUNCTION)
-        
-        YOUR RETURN VALUE SHOULD BE TRUE OR FALSE TO BE USED IN OTHER PARTS OF THE GAME
-        """
-        #Check if the game is in a terminal state using the is_terminal method
-        game_over, winner = self.game_state.is_terminal()
-
-        #Update the winner attribute if there is one
-        if game_over:
-            self.winner = winner  #winner would be either 'Human', 'AI', or 'Draw'
-
-        return game_over
-
-
-    def move(self, move):
-        self.game_state = self.game_state.get_new_state(move)
-
-
-    def play_ai(self):
-        """
-        YOUR CODE HERE TO CALL MINIMAX OR NEGAMAX DEPENDEING ON WHICH ALGORITHM SELECTED FROM THE GUI
-        ONCE THE ALGORITHM RETURNS THE BEST MOVE TO BE SELECTED, YOU SHOULD DRAW THE NOUGHT (OR CIRCLE DEPENDING
-        ON WHICH SYMBOL YOU SELECTED FOR THE AI PLAYER)
-        
-        THE RETURN VALUES FROM YOUR MINIMAX/NEGAMAX ALGORITHM SHOULD BE THE SCORE, MOVE WHERE SCORE IS AN INTEGER
-        NUMBER AND MOVE IS AN X,Y LOCATION RETURNED BY THE AGENT
-        """
-        if self.minimax_selected:
-            #minimax function needs to be called here
-            pass
-        else:
-            #negamax function needs to be called here
-            pass
-        
-        self.change_turn()
-        # pygame.display.update()
-        terminal = self.game_state.is_terminal()
-        """ USE self.game_state.get_scores(terminal) HERE TO COMPUTE AND DISPLAY THE FINAL SCORES """
-
-
-
-
-    def game_reset(self):
-        # self.draw_game()
-        """
-        YOUR CODE HERE TO RESET THE BOARD TO VALUE 0 FOR ALL CELLS AND CREATE A NEW GAME STATE WITH NEWLY INITIALIZED
-        BOARD STATE
-        """
-        #Reset the board to a 2D list of zeros
-        initial_board_state = [[0 for _ in range(self.GRID_SIZE)] for _ in range(self.GRID_SIZE)]
-        self.grid_rects = []  # Reset the grid rectangles
-        
-        #Create a new GameStatus object with the reset board
-        self.game_state = GameStatus(initial_board_state)
-        
-        #Reset winner to None as the game is starting over
-        self.winner = None
-        
-        #Reset scores if you're keeping track of them across games
-        self.human_score = 0
-        self.computer_score = 0
-        
-        #Redraw the game board to reflect the reset
-        # self.draw_game()
-        # pygame.display.update()
-
-        
-
-    def play_game(self, mode = "player_vs_ai"):
-        done = False
-        clock = pygame.time.Clock()
-        # self.draw_game()
-
-
-        while not done:
-            for event in pygame.event.get():  # User did something
-
-                if event.type == pygame.QUIT:
-                    done = True
-
-                elif event.type == pygame.MOUSEBUTTONDOWN:
-                    mouse_pos = event.pos
-
-                    print(len(self.grid_rects))
-                    for row in range(int(self.current_selection[0])):
-                        # print("row: ", row)
-
-                        for col in range(int(self.current_selection[0])):
-                            # print("col: ", col)
-                            if self.grid_rects[row][col].collidepoint(mouse_pos):
-                                x, y = self.grid_rects[row][col].x, self.grid_rects[row][col].y
-                                self.draw_circle(x, y)
-
-                    # Handle Nought option click
-                    if self.nought_rect.collidepoint(mouse_pos):
-                        self.nought_selected = True
-                        self.cross_selected = False  # Deselect the other option
-                        # self.draw_game()  # Redraw the game to show the updated colors
-                    elif self.cross_rect.collidepoint(mouse_pos):
-                        self.cross_selected = True
-                        self.nought_selected = False  # Deselect the other option
-                        # self.draw_game()  # Redraw the game to show the updated colors
-                    
-                    #Handle human vs human option click
-                    if self.human_human_rect.collidepoint(mouse_pos):
-                        self.human_vs_human_selected = True
-                        self.human_vs_computer_selected = False  # Deselect the other option
-                        self.minimax_selected = False  # Reset the AI strategy selection
-                        # self.draw_game()  # Redraw the game to show the updated colors
-                    
-                    
-                    #Handle human vs computer option click
-                    elif self.human_computer_rect.collidepoint(mouse_pos):
-                        self.human_vs_computer_selected = True
-                        self.human_vs_human_selected = False  #Deselect the other option
-                        self.minimax_selected = False  #Reset this selection every time "Human vs Computer" is clicked
-                        # self.draw_game()  #Redraw the game to show the updated colors
-                        
-                    #Handle clicks on the minimax or negamax options only when human_vs_computer is selected
-                    if self.human_vs_computer_selected:
-                        if self.minimax_rect.collidepoint(mouse_pos):
-                            #Toggle between true and none to allow for delelecting
-                            self.minimax_selected = not self.minimax_selected if self.minimax_selected else True
-                            # self.draw_game()
-                        elif self.negamax_rect.collidepoint(mouse_pos):
-                             #If minimax is selected, deselect it, otherwise do nothing
-                            if self.minimax_selected:
-                                self.minimax_selected = None
-                            # self.draw_game()
-
-
-                    #Check if the dropdown was clicked
-                    if self.dropdown_rect.collidepoint(mouse_pos):
-                        self.dropdown_expanded = not self.dropdown_expanded
-                        # self.draw_game()
-
-
-                    #Check if one of the dropdown options was clicked
-                    elif self.dropdown_expanded:
-                        for i, option in enumerate(self.dropdown_options):
-                            option_rect = self.dropdown_rect.copy()
-                            option_rect.y += (i + 1) * self.dropdown_rect.height
-                            if option_rect.collidepoint(mouse_pos):
-                                #Update the current selection with the clicked option
-                                self.current_selection = option
-                                #Collapse the dropdown as the selection has been made
-                                self.dropdown_expanded = False
-                                #Re-draw the game to reflect the changed selection
-                                # self.draw_game()
-                                break
-                    # Check if the start game button was clicked and start the game if it was
-                    if self.start_game_rect and self.start_game_rect.collidepoint(mouse_pos) and not self.start_game:
-                        self.start_game = True
-                        # self.start_game_rect = None
-                        # self.draw_game()
-                    # draw a restart button
-                    elif self.start_game and self.start_game_rect.collidepoint(mouse_pos):
-                        self.game_reset()
+    def play_game(self, mode="player_vs_ai"):
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                sys.exit()
+            elif event.type == pygame.MOUSEBUTTONDOWN:
+                # Check if the mouse click was inside the dropdown rectangle
+                if self.dropdown_rect.collidepoint(event.pos):
+                    self.dropdown_expanded = not self.dropdown_expanded
+                # Check if the mouse click was inside the dropdown options
+                if self.dropdown_expanded:
+                    for i, option in enumerate(self.dropdown_options):
+                        option_rect = self.dropdown_rect.copy()
+                        option_rect.y += (i + 1) * self.dropdown_rect.height
+                        if option_rect.collidepoint(event.pos):
+                            self.current_selection = option
+                            self.dropdown_expanded = False
+                            # Update the game state based on the selected board size
+                            if int(option[0]) == 3:
+                                self.game_state = GameStatus(turn_O=self.nought_selected)
+                            elif int(option[0]) == 4:
+                                self.game_state = GameStatus([[0,0,0,0],[0,0,0,0],[0,0,0,0],[0,0,0,0]], self.nought_selected)
+                            elif int(option[0]) == 5:
+                                self.game_state = GameStatus([[0,0,0,0,0], [0,0,0,0,0], [0,0,0,0,0], [0,0,0,0,0], [0,0,0,0,0]], self.nought_selected)
+                            # self.game_state = GameStatus(,self.nought_selected)
+                            self.start_game = False
+                            self.winner = None
+                            self.human_score = 0
+                            self.computer_score = 0
+                            self.minimax_selected = None
+                            self.negamax_selected = None
+                            self.grid_rects = []
+                            self.mode = mode
+                if self.nought_rect.collidepoint(event.pos):
+                    self.nought_selected = True
+                    self.cross_selected = False
+                    self.game_state.turn_O = self.nought_selected
+                if self.cross_rect.collidepoint(event.pos):
+                    self.nought_selected = False
+                    self.cross_selected = True
+                    self.game_state.turn_O = self.nought_selected
+                if self.human_human_rect.collidepoint(event.pos):
+                    self.human_vs_human_selected = True
+                    self.human_vs_computer_selected = False
+                    self.mode = "player_vs_player"
+                if self.human_computer_rect.collidepoint(event.pos):
+                    self.human_vs_computer_selected = True
+                    self.human_vs_human_selected = False
+                    self.mode = "player_vs_ai"
+                if self.minimax_rect and self.minimax_rect.collidepoint(event.pos):
+                    self.minimax_selected = True
+                    self.negamax_selected = False
+                if self.negamax_rect and self.negamax_rect.collidepoint(event.pos):
+                    self.minimax_selected = False
+                    self.negamax_selected = True
+                if self.start_game_rect.collidepoint(event.pos):
+                    if self.start_game:
+                        self.current_selection = "3x3"
+                        self.game_state = GameStatus(turn_O=self.nought_selected)
                         self.start_game = False
-                        # self.draw_game()
+                        self.winner = None
+                        self.human_score = 0
+                        self.computer_score = 0
+                        self.minimax_selected = None
+                        self.negamax_selected = None
+                        self.grid_rects = []
+                    else:
+                        self.start_game = True
+                        # self.game_state = GameStatus(turn_O=self.nought_selected)
+                        self.winner = None
+                        self.human_score = 0
+                        self.computer_score = 0
+                        self.minimax_selected = None
+                        self.negamax_selected = None
+                        self.grid_rects = [] 
+                if self.grid_rect and self.grid_rect.collidepoint(event.pos):
+                    if self.start_game:
+                        print("cell total: ", self.cellTotal)
+                        # print("game board", self.game_state.board_state)
+                        for row in range(self.cellTotal):
+                            for col in range(self.cellTotal):
+                                if self.grid_rects[row][col].collidepoint(event.pos) and self.game_state.is_terminal()[0] == False:
+                                    if self.game_state.board_state[row][col] == 0:
+                                        # print("grid rectangle: ", self.grid_rects)
+                                        if self.game_state.turn_O:
+                                            self.game_state.board_state[row][col] = 1
+                                            self.game_state.turn_O = False
+                                            if self.mode == "player_vs_ai":
+                                                if self.minimax_selected:
+                                                    val, move = minimax(self.game_state, False, 3, False)
+                                                    print("move: ", move)
+                                                    print("val: ", val)
+                                                    if move:
+                                                        self.game_state.board_state[move[0]][move[1]] = -1
+                                                        self.game_state.turn_O = True
+                                                    else:
+                                                        for i in range(self.cellTotal):
+                                                            for j in range(self.cellTotal):
+                                                                if self.game_state.board_state[i][j] == 0:
+                                                                    self.game_state.board_state[i][j] = -1
+                                                                    self.game_state.turn_O = True
+                                                                    break
+                                                        # self.game_state.board_state[row][col] = -1
+                                                        self.game_state.turn_O = True
+                                                    # self.game_state.board_state[move[0]][move[1]] = -1
+                                                    self.game_state.turn_O = True
+                                            # print("game board", self.game_state.board_state)
+                                        else:
+                                            # print("game board", self.game_state.board_state)
+                                            self.game_state.board_state[row][col] = -1
+                                            self.game_state.turn_O = True
+                                            # print("game board", self.game_state.board_state)
+                                        
+                                        self.human_score, self.computer_score = self.game_state.get_scores()
+                                        if self.game_state.is_terminal()[0]:
+                                            self.winner = self.game_state.is_terminal()[1]
+                                        print("scores: ", self.human_score, self.computer_score)
+                              
 
-                    
-
-                    
-
-
-                """
-                YOUR CODE HERE TO CHECK IF THE USER CLICKED ON A GRID ITEM. EXIT THE GAME IF THE USER CLICKED EXIT
-                """
-                
-                """
-                YOUR CODE HERE TO HANDLE THE SITUATION IF THE GAME IS OVER. IF THE GAME IS OVER THEN DISPLAY THE SCORE,
-                THE WINNER, AND POSSIBLY WAIT FOR THE USER TO CLEAR THE BOARD AND START THE GAME AGAIN (OR CLICK EXIT)
-                """
-                    
-                """
-                YOUR CODE HERE TO NOW CHECK WHAT TO DO IF THE GAME IS NOT OVER AND THE USER SELECTED A NON EMPTY CELL
-                IF CLICKED A NON EMPTY CELL, THEN GET THE X,Y POSITION, SET ITS VALUE TO 1 (SELECTED BY HUMAN PLAYER),
-                DRAW CROSS (OR NOUGHT DEPENDING ON WHICH SYMBOL YOU CHOSE FOR YOURSELF FROM THE gui) AND CALL YOUR 
-                PLAY_AI FUNCTION TO LET THE AGENT PLAY AGAINST YOU
-                """
-                
-                # if event.type == pygame.MOUSEBUTTONUP:
-                    # Get the position
-                    
-                    # Change the x/y screen coordinates to grid coordinates
-                    
-                    # Check if the game is human vs human or human vs AI player from the GUI. 
-                    # If it is human vs human then your opponent should have the value of the selected cell set to -1
-                    # Then draw the symbol for your opponent in the selected cell
-                    # Within this code portion, continue checking if the game has ended by using is_terminal function
-                
-            self.draw_game()
-            # Update the screen with what was drawn.
-            pygame.display.update()
-            clock.tick(60)
-
-        pygame.quit()
 
 tictactoegame = RandomBoardTicTacToe()
-# tictactoegame.draw_game()
-tictactoegame.play_game()
 
-"""
-YOUR CODE HERE TO SELECT THE OPTIONS VIA THE GUI CALLED FROM THE ABOVE LINE
-AFTER THE ABOVE LINE, THE USER SHOULD SELECT THE OPTIONS AND START THE GAME. 
-YOUR FUNCTION PLAY_GAME SHOULD THEN BE CALLED WITH THE RIGHT OPTIONS AS SOON
-AS THE USER STARTS THE GAME
-"""
+clock = pygame.time.Clock()
+while True:
+
+    # Process inputs
+    tictactoegame.play_game()
+
+    # Draw the game
+    tictactoegame.draw_game()
+
+    pygame.display.update()
+    clock.tick(60)
