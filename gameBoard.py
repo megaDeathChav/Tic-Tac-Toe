@@ -535,7 +535,7 @@ class RandomBoardTicTacToe:
                                             self.game_state.turn_O = False
                                             if self.mode == "player_vs_ai":
                                                 if self.minimax_selected:
-                                                    val, move = minimax(self.game_state, False, 3, False)
+                                                    val, move = minimax(self.game_state, 3, False)
                                                     print("move: ", move)
                                                     print("val: ", val)
                                                     if move:
