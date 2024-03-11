@@ -59,7 +59,7 @@ class RandomBoardTicTacToe:
         self.human_vs_computer_selected = False
 
 
-        self.minimax_selected = None  # No algorithm selected by default
+        self.minimax_selected = True  # No algorithm selected by default
         self.minimax_rect = None  # Will be defined in draw_game
         self.negamax_rect = None  # Will be defined in draw_game
 
@@ -475,7 +475,7 @@ class RandomBoardTicTacToe:
                             self.winner = None
                             self.human_score = 0
                             self.computer_score = 0
-                            self.minimax_selected = None
+                            self.minimax_selected = True
                             self.negamax_selected = None
                             self.grid_rects = []
                             self.mode = mode
@@ -509,7 +509,7 @@ class RandomBoardTicTacToe:
                         self.winner = None
                         self.human_score = 0
                         self.computer_score = 0
-                        self.minimax_selected = None
+                        self.minimax_selected = True
                         self.negamax_selected = None
                         self.grid_rects = []
                     else:
@@ -518,8 +518,8 @@ class RandomBoardTicTacToe:
                         self.winner = None
                         self.human_score = 0
                         self.computer_score = 0
-                        self.minimax_selected = None
-                        self.negamax_selected = None
+                        # self.minimax_selected = None
+                        # self.negamax_selected = None
                         self.grid_rects = [] 
                 if self.grid_rect and self.grid_rect.collidepoint(event.pos):
                     if self.start_game:
