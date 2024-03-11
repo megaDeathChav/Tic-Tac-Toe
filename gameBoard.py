@@ -534,9 +534,9 @@ class RandomBoardTicTacToe:
                                             self.game_state.turn_O = False
                                             if self.mode == "player_vs_ai":
                                                 if self.minimax_selected:
-                                                    val, move = minimax(self.game_state, 3, False)
-                                                    print("move: ", move)
-                                                    print("val: ", val)
+                                                    val, move = minimax(self.game_state, 5, False)
+                                                    print("minimax move: ", move)
+                                                    print("minimax val: ", val)
                                                     if move:
                                                         self.game_state.board_state[move[0]][move[1]] = -1
                                                         self.game_state.turn_O = True
@@ -545,6 +545,17 @@ class RandomBoardTicTacToe:
                                                         self.game_state.turn_O = True
                                                     # self.game_state.board_state[move[0]][move[1]] = -1
                                                     self.game_state.turn_O = True
+                                                elif self.negamax_selected:
+                                                    val, move = negamax(self.game_state, 5, 1)
+                                                    print("negamax move: ", move)
+                                                    print("negamax val: ", val)
+                                                    if move:
+                                                        self.game_state.board_state[move[0]][move[1]] = -1
+                                                        self.game_state.turn_O = True
+                                                    else:
+                                                        # self.game_state.board_state[row][col] = -1
+                                                        self.game_state.turn_O = True
+                                                    # self.game_state.board_state[move[0]][move[1]] = -1
                                             # print("game board", self.game_state.board_state)
                                         else:
                                             # print("game board", self.game_state.board_state)
