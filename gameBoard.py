@@ -478,7 +478,6 @@ class RandomBoardTicTacToe:
                             self.minimax_selected = True
                             self.negamax_selected = None
                             self.grid_rects = []
-                            self.mode = mode
                 if self.nought_rect.collidepoint(event.pos):
                     self.nought_selected = True
                     self.cross_selected = False
@@ -542,12 +541,6 @@ class RandomBoardTicTacToe:
                                                         self.game_state.board_state[move[0]][move[1]] = -1
                                                         self.game_state.turn_O = True
                                                     else:
-                                                        for i in range(self.cellTotal):
-                                                            for j in range(self.cellTotal):
-                                                                if self.game_state.board_state[i][j] == 0:
-                                                                    self.game_state.board_state[i][j] = -1
-                                                                    self.game_state.turn_O = True
-                                                                    break
                                                         # self.game_state.board_state[row][col] = -1
                                                         self.game_state.turn_O = True
                                                     # self.game_state.board_state[move[0]][move[1]] = -1
