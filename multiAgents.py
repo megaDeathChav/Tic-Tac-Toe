@@ -7,18 +7,18 @@ def minimax(game_state: GameStatus, depth: int, maximizingPlayer: bool, alpha=fl
     if depth == 0 or terminal:
         # get_scores returns a tuple of the scores for each player: (player, AI) where AI score is negative
         newScores = game_copy.get_scores()
-        if maximizingPlayer:
+        if not maximizingPlayer:
             if newScores[0] > -1*newScores[1]:
-                return 1, None
+                return newScores[0], None
             elif newScores[0] < -1*newScores[1]:
-                return -1, None
+                return newScores[1], None
             else:
                 return 0, None
         else:
             if newScores[0] > -1*newScores[1]:
-                return -1, None
+                return newScores[1], None
             elif newScores[0] < -1*newScores[1]:
-                return 1, None
+                return newScores[0], None
             else:
                 return 0, None
             
