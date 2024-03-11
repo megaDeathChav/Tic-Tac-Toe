@@ -1,10 +1,12 @@
 from GameStatus_5120 import GameStatus
+from copy import deepcopy
 
 def minimax(game_state: GameStatus, depth: int, maximizingPlayer: bool, alpha=float('-inf'), beta=float('inf')):
+    game_copy = GameStatus(deepcopy(game_state.board_state), deepcopy(game_state.turn_O))
     terminal, winner = game_state.is_terminal()
     if depth == 0 or terminal:
         # get_scores returns a tuple of the scores for each player: (player, AI) where AI score is negative
-        newScores = game_state.get_scores()
+        newScores = game_copy.get_scores()
         if maximizingPlayer:
             if newScores[0] > -1*newScores[1]:
                 return 1, None
@@ -23,8 +25,8 @@ def minimax(game_state: GameStatus, depth: int, maximizingPlayer: bool, alpha=fl
     if maximizingPlayer:
         max_eval = float('-inf')
         best_move = None
-        for move in game_state.get_moves():  
-            child = game_state.get_new_state(move)
+        for move in game_copy.get_moves():  
+            child = game_copy.get_new_state(move)
             eval, _ = minimax(child, depth - 1, False, alpha, beta)
             if eval > max_eval:
                 max_eval = eval
@@ -36,8 +38,8 @@ def minimax(game_state: GameStatus, depth: int, maximizingPlayer: bool, alpha=fl
     else:
         min_eval = float('inf')
         best_move = None
-        for move in game_state.get_moves():
-            child = game_state.get_new_state(move)
+        for move in game_copy.get_moves():
+            child = game_copy.get_new_state(move)
             eval, _ = minimax(child, depth - 1, True, alpha, beta)
             print("eval", eval, "min_eval", min_eval, "best_move", best_move, "move", move, "_", _)
             if eval < min_eval:
